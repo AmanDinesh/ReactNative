@@ -54,9 +54,6 @@ class Menu extends Component {
                 />
             );
         }
-        
-        
-
     }
 
 }
