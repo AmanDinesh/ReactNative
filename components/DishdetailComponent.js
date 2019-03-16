@@ -16,7 +16,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => ({
     postFavorite: (dishId) => dispatch(postFavorite(dishId)),
-    postComment: (comment) => dispatch(postComment(comment))
+    postComment: (dishId, rating, author, comment) => dispatch(postComment(dishId, rating, author, comment))
 });
 
 let id=100;
@@ -25,7 +25,7 @@ function RenderDish(props) {
 
     const dish = props.dish;
 
-    handleViewRef = ref => this.view = ref;
+    
 
     
     const recognizeDrag = ({ moveX, moveY, dx, dy }) => {
@@ -34,6 +34,16 @@ function RenderDish(props) {
         else
             return false;
     }
+
+    const recognizeComment = ({ moveX, moveY, dx, dy }) => {
+        if (dx > -200)
+            return true;
+        else
+            return false;
+    }
+
+    handleViewRef = ref => this.view = ref;
+
 
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (e, gestureState) => {
@@ -53,16 +63,22 @@ function RenderDish(props) {
                     ],
                     { cancelable: false }
                 );
-
-            return true;
+            else if (recognizeComment(gestureState)) {
+                setTimeout(() => {
+                    props.toggleModal();
+                }, 1000)
+            }
+            else {
+                return true;
+            }
         }
     })
     
         if (dish != null) {
             return(
                 <Animatable.View animation="fadeInDown" duration={2000} delay={1000}
-                    ref={this.handleViewRef}
-                    {...panResponder.panHandlers}>
+                ref={this.handleViewRef}
+                {...panResponder.panHandlers} >
                 <Card
                 featuredTitle={dish.name}
                 image={{ uri: baseUrl + dish.image }}
@@ -105,8 +121,10 @@ function RenderComments(props) {
         return (
             <View key={index} style={{margin: 10}}>
                 <Text style={{fontSize: 14}}>{item.comment}</Text>
-                <Text style={{fontSize: 14}}>{item.rating} Stars</Text>
-                <Text style={{fontSize: 12}}>{'-- ' + item.author + ', ' + item.date }</Text>
+                <View style={styles.stars}>
+                    <Rating imageSize={20} readonly />
+                </View>
+                <Text style={{fontSize: 12}}>{'-- ' + item.author + ' ' + item.date }</Text>
             </View>
         );
     };
@@ -260,6 +278,14 @@ class Dishdetail extends Component {
 }
 
 const styles = StyleSheet.create({
+    stars: {
+        alignItems: 'flex-start'
+    },
+    icons: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row'
+    },
     formRow: {
       alignItems: 'center',
       justifyContent: 'center',
